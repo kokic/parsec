@@ -11,6 +11,10 @@ import parsec.records.Tuple;
 
 public interface Parser<A> extends GenericParser<StringBuffer, A> {
 
+    default Optional<Tuple<A, StringBuffer>> parse(String tokens) {
+        return parse(new StringBuffer(tokens));
+    }
+
     @Override
     default Parser<List<A>> many() {
         return tokens -> GenericParser.super.many().parse(tokens);

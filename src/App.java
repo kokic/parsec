@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.function.Supplier;
 
 import static parsec.bundle.CharacterBundle.*;
 
@@ -23,6 +24,23 @@ public interface App {
 
     static void main(String[] args) throws Exception {
 
+        // var rdName = ScriptBundle.name
+        // .map(x -> x.toString()).map(x -> (Supplier<String>) () -> {
+        // System.out.println("case rd");
+        // return x;
+        // });
+        // var caseX = rdName.skip(CharacterBundle.asterisk);
+
+        // var parser = caseX.or(rdName).map(x -> x.get());
+        // showParser(parser.parse("aba"));
+
+        var buff = new StringBuffer("puts: _ -> _ ");
+        showParser(ScriptBundle.expr
+                .map(x -> x.get())
+                .parse(buff));
+    }
+
+    static void repl() {
         // (11 > 2) + 7 -> 8.0
         // 11 < 2 == 0 -> true
         // 11 < 2 == 3 > 7 --> true
@@ -38,7 +56,7 @@ public interface App {
         // x = exp: d -> d -1
 
         // e ^ (pi * 163 ^ (1/2))
-        // var buff = new StringBuffer("e ^ (π * 163 ^ (1/2))");
+        // var buff = new StringBuffer("exp: d -> d 2");
         // var optional = ScriptBundle.expr.parse(buff);
         // System.out.println(optional.get().first());
 
@@ -48,19 +66,17 @@ public interface App {
         // > exp: d -> d 2 * (acos: d -> d 0) * sqrt: d -> d 163
         // 2.6253741264076826E17
 
-        var scanner = new Scanner(System.in);
-        while (true) {
-            System.out.printf("> ");
-            var line = scanner.nextLine();
-            if (line.equals(":q"))
-                break;
-            var buff = new StringBuffer(line);
-            showParser(ScriptBundle.expr.parse(buff));
-            // System.out.println(ScriptBundle.Context.variables);
-        }
-        scanner.close();
-
-        
+        // var scanner = new Scanner(System.in);
+        // while (true) {
+        // System.out.printf("> ");
+        // var line = scanner.nextLine();
+        // if (line.equals(":q"))
+        // break;
+        // var buff = new StringBuffer(line);
+        // showParser(ScriptBundle.expr.parse(buff));
+        // // System.out.println(ScriptBundle.Context.variables);
+        // }
+        // scanner.close();
     }
 
     static <F, S> void showParser(Optional<Tuple<F, S>> optional) {

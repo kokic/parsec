@@ -12,9 +12,19 @@ import java.util.Objects;
 
 public final class CLib {
 
-    public static final Linker linker = Linker.nativeLinker();
-    public static final SymbolLookup lookup = linker.defaultLookup();
-    public static final SegmentAllocator allocator = SegmentAllocator.implicitAllocator();
+    public static Linker linker;
+    public static SymbolLookup lookup;
+    public static SegmentAllocator allocator;
+
+    static {
+        initial();
+    }
+
+    public static final void initial() {
+        linker = Linker.nativeLinker();
+        lookup = linker.defaultLookup();
+        allocator = SegmentAllocator.implicitAllocator();
+    }
 
     public static final ValueLayout.OfAddress Addr = ValueLayout.ADDRESS;
     public static final ValueLayout.OfByte Byte = ValueLayout.JAVA_BYTE;
