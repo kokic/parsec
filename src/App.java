@@ -34,10 +34,11 @@ public interface App {
         // var parser = caseX.or(rdName).map(x -> x.get());
         // showParser(parser.parse("aba"));
 
-        var buff = new StringBuffer("puts: _ -> _ ");
-        showParser(ScriptBundle.expr
-                .map(x -> x.get())
-                .parse(buff));
+        // showParser(ScriptBundle.text.parse("'aa\\'inner\\'bb'"));
+
+        
+        var buff = new StringBuffer("1 <= 2");
+        showParser(ScriptBundle.expr.map(x -> x.get()).parse(buff));
     }
 
     static void repl() {
@@ -91,7 +92,7 @@ public interface App {
         // System.out.println("match: " + tuple.first());
         // System.out.println("tails: " + tuple.second());
         // System.out.println();
-        System.out.println(tuple.first());
+        System.out.println("out: " + tuple.first());
     }
 
 }

@@ -9,22 +9,46 @@ import java.lang.foreign.MemoryLayout;
 
 import foreign.CLib;
 import foreign.NFInfer;
-import parsec.spec.InfixEval;
 import parsec.spec.Parser;
-import parsec.variety.DoubleVariety;
 import parsec.variety.LogicVariety;
-import parsec.bundle.DoubleBundle;
-import parsec.generic.GenericInfixEval;
 import parsec.records.Tuple;
 
 import static parsec.bundle.CharacterBundle.*;
+import static parsec.bundle.DoubleBundle.*;
 import static parsec.spec.Parser.*;
 
 public interface ScriptBundle {
 
+    static enum DataLayout {
+        Text
+    }
+    
+
     Parser<String> name = string(Character::isJavaIdentifierStart, Character::isJavaIdentifierPart);
 
+    Parser<String> textBody = string("\\'")
+            .or(character(x -> x != '\'').map(x -> String.valueOf(x)))
+            .asterisk();
+
+    Parser<Tuple<DataLayout, String>> text = between(textBody, token('\''))
+            .map(x -> Tuple.of(DataLayout.Text, x));
+
     LogicVariety<Supplier<Object>> variety = new LogicVariety<Supplier<Object>>() {
+
+        // @Override
+        // public Supplier<Object> add(Supplier<Object> x, Supplier<Object> y) {
+        // if (!(x.get() instanceof Tuple<?, ?> t && t.first() instanceof DataLayout
+        // layout))
+        // return fromDouble(toDouble(x) + toDouble(y));
+        // return switch (layout) {
+        // case Text -> () -> "wa";
+        // };
+        // }
+
+        @Override 
+        public Supplier<Object> fromDouble(Double d) {
+            return () -> d;
+        }
 
         @Override
         public Double toDouble(Supplier<Object> x) {
@@ -35,6 +59,12 @@ public interface ScriptBundle {
                 default -> throw new IllegalArgumentException(
                         "Unexpected value: " + x + " to double");
             };
+        }
+          
+
+        @Override 
+        public Supplier<Object> fromBoolean(Boolean b) {
+            return () -> b;
         }
 
         @Override
@@ -48,11 +78,16 @@ public interface ScriptBundle {
             };
         }
 
+        int a = 0;
+
+
         @Override
         public Parser<Supplier<Object>> primary() {
+            System.out.print(a++ + " ");
             return invokeExpr()
-                    .or(name.map(x -> () -> (Object) x))
-                    .or(DoubleBundle.decimal.map(x -> () -> x));
+                    .or(name.map(x -> () -> x))
+                    .or(decimal.map(x -> () -> x))
+                    .or(text.map(x -> () -> x));
         }
 
         @Override
@@ -97,12 +132,8 @@ public interface ScriptBundle {
             itaniumGCC.put("_", CLib.Addr /* address */);
         }
 
-        int a = 0;
-
         public Object invoke(String name, List<String> params, String res,
                 List<Object> args) {
-            System.out.print(a++ + " ");
-
             var val = new NFInfer(name, itaniumGCC.get(res))
                     .invokeOrCalm(args.toArray());
             return val;
@@ -120,8 +151,9 @@ public interface ScriptBundle {
                 var name = tuple2.first();
                 var params = tuple2.second();
                 var res = tuple1.second();
-                var args = tree.second();
-                var argsv = args.stream().map(x -> x.get()).toList();
+                var stream = tree.second().stream();
+                var argsv = stream.map(x -> Context.eval(x.get())).toList();
+                // System.out.println("argv: " + argsv);
                 return invoke(name, params, res, argsv);
             });
         }
@@ -163,6 +195,10 @@ public interface ScriptBundle {
 
         public static Object eval(Object valueOrRef) {
             return switch (valueOrRef) {
+                case Tuple<?, ?> tuple when tuple.first() instanceof DataLayout layout ->
+                    switch (layout) {
+                        case Text -> tuple.second();
+                    };
                 case String identifier -> query(identifier);
                 default -> valueOrRef;
             };
