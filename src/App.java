@@ -37,7 +37,7 @@ public interface App {
         // showParser(ScriptBundle.text.parse("'aa\\'inner\\'bb'"));
 
         
-        var buff = new StringBuffer("1 <= 2");
+        var buff = new StringBuffer(" ' ' + 1  ");
         showParser(ScriptBundle.expr.map(x -> x.get()).parse(buff));
     }
 

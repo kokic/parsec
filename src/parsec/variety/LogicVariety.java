@@ -7,9 +7,10 @@ import java.math.BigDecimal;
 import java.util.function.Function;
 
 import parsec.generic.GenericInfixEval;
+import parsec.spec.InfixEval;
 import parsec.spec.Parser;
 
-public abstract class LogicVariety<T> extends DoubleVariety<T> {
+public abstract class LogicVariety<T, N> extends ArithmeticVariety<T, N> {
 
     @SuppressWarnings("unchecked")
     public T fromBoolean(Boolean x) {
@@ -64,16 +65,18 @@ public abstract class LogicVariety<T> extends DoubleVariety<T> {
         return eqExpr;
     }
 
+    public abstract T applyInt(T x, T y, InfixEval<Integer> operator);
+
     public T bitAnd(T x, T y) {
-        return embedInt(x, y, (a, b) -> a & b);
+        return applyInt(x, y, (a, b) -> a & b);
     }
 
     public T bitXor(T x, T y) {
-        return embedInt(x, y, (a, b) -> a ^ b);
+        return applyInt(x, y, (a, b) -> a ^ b);
     }
 
     public T bitOr(T x, T y) {
-        return embedInt(x, y, (a, b) -> a | b);
+        return applyInt(x, y, (a, b) -> a | b);
     }
 
     public Parser<Character> bitAndInf = between(token('&'));

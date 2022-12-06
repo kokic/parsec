@@ -19,12 +19,12 @@ public interface DoubleBundle {
     DoubleVariety<Double> variety = new DoubleVariety<Double>() {
 
         @Override
-        public Double fromDouble(Double x) {
+        public Double fromNumber(Double x) {
             return x;
         }
 
         @Override
-        public Double toDouble(Double x) {
+        public Double toNumber(Double x) {
             return x;
         }
 

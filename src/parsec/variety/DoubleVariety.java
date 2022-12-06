@@ -3,54 +3,54 @@ package parsec.variety;
 import parsec.spec.DetInteger;
 import parsec.spec.InfixEval;
 
-public abstract class DoubleVariety<T> extends ArithmeticVariety<T> {
+public abstract class DoubleVariety<T> extends ArithmeticVariety<T, Double> {
 
     @SuppressWarnings("unchecked")
-    public T fromDouble(Double x) {
+    public T fromNumber(Double x) {
         return (T) x;
     }
 
-    public abstract Double toDouble(T x);
+    public abstract Double toNumber(T x);
 
     @Override
     public T negate(T x) {
-        return fromDouble(-toDouble(x));
+        return fromNumber(-toNumber(x));
     }
 
     @Override
     public T factorial(T x) {
-        return fromDouble(DetInteger.factorial(toDouble(x).intValue())
+        return fromNumber(DetInteger.factorial(toNumber(x).intValue())
                 .doubleValue());
     }
 
     @Override
     public T pow(T x, T y) {
-        return fromDouble(Math.pow(toDouble(x), toDouble(y)));
+        return fromNumber(Math.pow(toNumber(x), toNumber(y)));
     }
 
     @Override
     public T mul(T x, T y) {
-        return fromDouble(toDouble(x) * toDouble(y));
+        return fromNumber(toNumber(x) * toNumber(y));
     }
 
     @Override
     public T div(T x, T y) {
-        return fromDouble(toDouble(x) / toDouble(y));
+        return fromNumber(toNumber(x) / toNumber(y));
     }
 
     @Override
     public T mod(T x, T y) {
-        return fromDouble(toDouble(x) % toDouble(y));
+        return fromNumber(toNumber(x) % toNumber(y));
     }
 
     @Override
     public T add(T x, T y) {
-        return fromDouble(toDouble(x) + toDouble(y));
+        return fromNumber(toNumber(x) + toNumber(y));
     }
 
     @Override
     public T sub(T x, T y) {
-        return fromDouble(toDouble(x) - toDouble(y));
+        return fromNumber(toNumber(x) - toNumber(y));
     }
 
     @Override
@@ -64,7 +64,7 @@ public abstract class DoubleVariety<T> extends ArithmeticVariety<T> {
     }
 
     public T embedInt(T x, T y, InfixEval<Integer> operator) {
-        var integer = operator.eval(toDouble(x).intValue(), toDouble(y).intValue());
-        return fromDouble((double) integer);
+        var integer = operator.eval(toNumber(x).intValue(), toNumber(y).intValue());
+        return fromNumber((double) integer);
     }
 }

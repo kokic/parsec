@@ -7,7 +7,14 @@ import static parsec.spec.Parser.*;
 
 import parsec.spec.Parser;
 
-public abstract class ArithmeticVariety<T> extends PrimaryVariety<T> {
+public abstract class ArithmeticVariety<T, N> extends PrimaryVariety<T> {
+
+    @SuppressWarnings("unchecked")
+    public T fromNumber(N x) {
+        return (T) x;
+    }
+
+    public abstract N toNumber(T x);
 
     public abstract T negate(T x);
     public abstract T factorial(T x);

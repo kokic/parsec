@@ -2,16 +2,16 @@ package script;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.lang.foreign.MemoryLayout;
 
 import foreign.CLib;
 import foreign.NFInfer;
+import parsec.spec.DetInteger;
+import parsec.spec.InfixEval;
 import parsec.spec.Parser;
 import parsec.variety.LogicVariety;
-import parsec.records.Tuple;
 
 import static parsec.bundle.CharacterBundle.*;
 import static parsec.bundle.DoubleBundle.*;
@@ -19,10 +19,12 @@ import static parsec.spec.Parser.*;
 
 public interface ScriptBundle {
 
-    static enum DataLayout {
-        Text
+    static record Text(String value) {
+        @Override
+        public String toString() {
+            return value;
+        }
     }
-    
 
     Parser<String> name = string(Character::isJavaIdentifierStart, Character::isJavaIdentifierPart);
 
@@ -30,28 +32,17 @@ public interface ScriptBundle {
             .or(character(x -> x != '\'').map(x -> String.valueOf(x)))
             .asterisk();
 
-    Parser<Tuple<DataLayout, String>> text = between(textBody, token('\''))
-            .map(x -> Tuple.of(DataLayout.Text, x));
+    Parser<Text> text = between(textBody, token('\'')).map(Text::new);
 
-    LogicVariety<Supplier<Object>> variety = new LogicVariety<Supplier<Object>>() {
+    LogicVariety<Supplier<Object>, Double> variety = new LogicVariety<Supplier<Object>, Double>() {
 
-        // @Override
-        // public Supplier<Object> add(Supplier<Object> x, Supplier<Object> y) {
-        // if (!(x.get() instanceof Tuple<?, ?> t && t.first() instanceof DataLayout
-        // layout))
-        // return fromDouble(toDouble(x) + toDouble(y));
-        // return switch (layout) {
-        // case Text -> () -> "wa";
-        // };
-        // }
-
-        @Override 
-        public Supplier<Object> fromDouble(Double d) {
+        @Override
+        public Supplier<Object> fromNumber(Double d) {
             return () -> d;
         }
 
         @Override
-        public Double toDouble(Supplier<Object> x) {
+        public Double toNumber(Supplier<Object> x) {
             return switch (x.get()) {
                 case Double d -> d;
                 case Boolean b -> b ? 1d : 0d;
@@ -60,9 +51,8 @@ public interface ScriptBundle {
                         "Unexpected value: " + x + " to double");
             };
         }
-          
 
-        @Override 
+        @Override
         public Supplier<Object> fromBoolean(Boolean b) {
             return () -> b;
         }
@@ -80,10 +70,9 @@ public interface ScriptBundle {
 
         int a = 0;
 
-
         @Override
         public Parser<Supplier<Object>> primary() {
-            System.out.print(a++ + " ");
+            System.out.println(a++ + " ");
             return invokeExpr()
                     .or(name.map(x -> () -> x))
                     .or(decimal.map(x -> () -> x))
@@ -93,7 +82,7 @@ public interface ScriptBundle {
         @Override
         public Boolean eq(Supplier<Object> x, Supplier<Object> y) {
             return switch (x.get()) {
-                case Double d -> d.equals(toDouble(y));
+                case Double d -> d.equals(toNumber(y));
                 case Boolean b -> b.equals(toBoolean(y));
                 case String s -> s.equals(y.toString());
                 default -> x.equals(y);
@@ -102,7 +91,7 @@ public interface ScriptBundle {
 
         @Override
         public Boolean lt(Supplier<Object> x, Supplier<Object> y) {
-            return toDouble(x) < toDouble(y);
+            return toNumber(x) < toNumber(y);
         }
 
         public Supplier<Object> assign(Supplier<Object> x, Supplier<Object> y) {
@@ -162,6 +151,66 @@ public interface ScriptBundle {
         public Parser<Supplier<Object>> expr() {
             return assignExpr.map(x -> () -> Context.eval(x.get()));
         }
+
+        @Override
+        public Supplier<Object> applyInt(Supplier<Object> x, Supplier<Object> y, InfixEval<Integer> operator) {
+            var integer = operator.eval(toNumber(x).intValue(), toNumber(y).intValue());
+            return fromNumber(integer.doubleValue());
+        }
+
+        @Override
+        public Supplier<Object> negate(Supplier<Object> x) {
+            return fromNumber(-toNumber(x));
+        }
+
+        @Override
+        public Supplier<Object> factorial(Supplier<Object> x) {
+            return fromNumber(DetInteger.factorial(toNumber(x).intValue())
+                    .doubleValue());
+        }
+
+        @Override
+        public Supplier<Object> pow(Supplier<Object> x, Supplier<Object> y) {
+            return fromNumber(Math.pow(toNumber(x), toNumber(y)));
+        }
+
+        @Override
+        public Supplier<Object> mul(Supplier<Object> x, Supplier<Object> y) {
+            return fromNumber(toNumber(x) * toNumber(y));
+        }
+
+        @Override
+        public Supplier<Object> div(Supplier<Object> x, Supplier<Object> y) {
+            return fromNumber(toNumber(x) / toNumber(y));
+        }
+
+        @Override
+        public Supplier<Object> mod(Supplier<Object> x, Supplier<Object> y) {
+            return fromNumber(toNumber(x) % toNumber(y));
+        }
+
+        @Override
+        public Supplier<Object> add(Supplier<Object> x, Supplier<Object> y) {
+            return switch (x.get()) {
+                case Text t -> () -> new Text(t.value + y.get());
+                default -> fromNumber(toNumber(x) + toNumber(y));
+            };
+        }
+
+        @Override
+        public Supplier<Object> sub(Supplier<Object> x, Supplier<Object> y) {
+            return fromNumber(toNumber(x) - toNumber(y));
+        }
+
+        @Override
+        public Supplier<Object> lsh(Supplier<Object> x, Supplier<Object> y) {
+            return applyInt(x, y, (a, b) -> a >> b);
+        }
+
+        @Override
+        public Supplier<Object> rsh(Supplier<Object> x, Supplier<Object> y) {
+            return applyInt(x, y, (a, b) -> a << b);
+        }
     };
 
     Parser<Supplier<Object>> expr = variety.expr();
@@ -195,10 +244,7 @@ public interface ScriptBundle {
 
         public static Object eval(Object valueOrRef) {
             return switch (valueOrRef) {
-                case Tuple<?, ?> tuple when tuple.first() instanceof DataLayout layout ->
-                    switch (layout) {
-                        case Text -> tuple.second();
-                    };
+                case Text text -> text.value;
                 case String identifier -> query(identifier);
                 default -> valueOrRef;
             };
