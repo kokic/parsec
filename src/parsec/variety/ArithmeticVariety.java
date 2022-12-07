@@ -33,9 +33,8 @@ public abstract class ArithmeticVariety<T, N> extends PrimaryVariety<T> {
     }
 
     public Parser<T> negateExact = minus.follow(() -> this.unaryExpr).map(x -> negate(x.second()));
-    public Parser<T> factorialExact = primaryExpr.branch(exclaim, this::factorial);
-    
-    public Parser<T> unaryExpr = negateExact.or(factorialExact).or(primaryExpr);
+    public Parser<T> factorialExpr = primaryExpr.branch(exclaim, this::factorial);
+    public Parser<T> unaryExpr = negateExact.or(factorialExpr);
 
     public Parser<String> powInf = between(circumflex).map(String::valueOf).or(between(exponent));
     public Parser<Function<T, T>> powExt = extend(powInf, unaryExpr, this::pow);

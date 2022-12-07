@@ -1,4 +1,6 @@
 
+import java.io.BufferedInputStream;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.lang.Character.UnicodeBlock;
@@ -18,7 +20,7 @@ import parsec.bundle.IntegerBundle;
 import parsec.records.Tuple;
 import parsec.spec.DetInteger;
 import parsec.variety.ArithmeticVariety;
-import script.ScriptBundle;
+import script.ScriptMacro;
 
 public interface App {
 
@@ -36,9 +38,18 @@ public interface App {
 
         // showParser(ScriptBundle.text.parse("'aa\\'inner\\'bb'"));
 
-        
-        var buff = new StringBuffer(" ' ' + 1  ");
-        showParser(ScriptBundle.expr.map(x -> x.get()).parse(buff));
+        // System.out.println(token('ℤ').parse("ℤ"));
+
+        // System.out.println(new Scanner(System.in).next());
+        // System.out.println("\u2124");
+        // System.out.println("π");
+
+        // System.out.println(new BigDecimal(1.0));
+
+        // var buff = new StringBuffer("puts: _ -> _ 'hello' ");
+        // showParser(ScriptBundle.expr.map(x -> x.get()).parse(buff));
+
+        repl();
     }
 
     static void repl() {
@@ -67,17 +78,21 @@ public interface App {
         // > exp: d -> d 2 * (acos: d -> d 0) * sqrt: d -> d 163
         // 2.6253741264076826E17
 
-        // var scanner = new Scanner(System.in);
-        // while (true) {
-        // System.out.printf("> ");
-        // var line = scanner.nextLine();
-        // if (line.equals(":q"))
-        // break;
-        // var buff = new StringBuffer(line);
-        // showParser(ScriptBundle.expr.parse(buff));
-        // // System.out.println(ScriptBundle.Context.variables);
-        // }
-        // scanner.close();
+        var scanner = new Scanner(System.in);
+        loop: while (true) {
+            System.out.printf("> ");
+            var line = scanner.nextLine();
+            switch (line) {
+                case ":q":
+                    break loop;
+                case ".v":
+                    System.out.println(ScriptMacro.Context.variables);
+                default:
+                    var buff = new StringBuffer(line);
+                    showParser(ScriptMacro.expr.map(x -> x.get()).parse(buff));
+            }
+        }
+        scanner.close();
     }
 
     static <F, S> void showParser(Optional<Tuple<F, S>> optional) {

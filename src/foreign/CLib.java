@@ -17,7 +17,7 @@ public final class CLib {
     public static SegmentAllocator allocator;
 
     static {
-        // initial();
+        initial();
     }
 
     public static final void initial() {

@@ -5,8 +5,9 @@ import static parsec.bundle.IntegerBundle.*;
 
 import java.util.function.Function;
 
+import parsec.spec.DetInteger;
 import parsec.spec.Parser;
-import parsec.variety.DoubleVariety;
+import parsec.variety.ArithmeticVariety;
 
 public interface DoubleBundle {
 
@@ -16,7 +17,7 @@ public interface DoubleBundle {
             .map(x -> Double.parseDouble(x.first().first() + "." + x.second()));
     Parser<Double> decimal = decimalExact.or(integer.map(intToDouble));
 
-    DoubleVariety<Double> variety = new DoubleVariety<Double>() {
+    ArithmeticVariety<Double, Double> variety = new ArithmeticVariety<Double, Double>() {
 
         @Override
         public Double fromNumber(Double x) {
@@ -32,6 +33,55 @@ public interface DoubleBundle {
         public Parser<Double> primary() {
             return decimal;
         }
-        
+
+        @Override
+        public Double negate(Double x) {
+            return -x;
+        }
+
+        @Override
+        public Double factorial(Double x) {
+            return DetInteger.factorial(toNumber(x).intValue()).doubleValue();
+        }
+
+        @Override
+        public Double pow(Double x, Double y) {
+            return Math.pow(x, y);
+        }
+
+        @Override
+        public Double mul(Double x, Double y) {
+            return x * y;
+        }
+
+        @Override
+        public Double div(Double x, Double y) {
+            return x / y;
+        }
+
+        @Override
+        public Double mod(Double x, Double y) {
+            return x % y;
+        }
+
+        @Override
+        public Double add(Double x, Double y) {
+            return x + y;
+        }
+
+        @Override
+        public Double sub(Double x, Double y) {
+            return x - y;
+        }
+
+        @Override
+        public Double lsh(Double x, Double y) {
+            return (double) (x.intValue() << y.intValue());
+        }
+
+        @Override
+        public Double rsh(Double x, Double y) {
+            return (double) (x.intValue() >> y.intValue());
+        }
     };
 }

@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.lang.foreign.MemoryLayout;
+import java.math.BigDecimal;
+import java.math.MathContext;
 
 import foreign.CLib;
 import foreign.NFInfer;
@@ -17,7 +19,7 @@ import static parsec.bundle.CharacterBundle.*;
 import static parsec.bundle.DoubleBundle.*;
 import static parsec.spec.Parser.*;
 
-public interface ScriptBundle {
+public interface ScriptMacro {
 
     static record Text(String value) {
         @Override
@@ -31,24 +33,23 @@ public interface ScriptBundle {
     Parser<String> textBody = string("\\'")
             .or(character(x -> x != '\'').map(x -> String.valueOf(x)))
             .asterisk();
-
     Parser<Text> text = between(textBody, token('\'')).map(Text::new);
 
-    LogicVariety<Supplier<Object>, Double> variety = new LogicVariety<Supplier<Object>, Double>() {
+    LogicVariety<Supplier<Object>, BigDecimal> variety = new LogicVariety<Supplier<Object>, BigDecimal>() {
 
         @Override
-        public Supplier<Object> fromNumber(Double d) {
+        public Supplier<Object> fromNumber(BigDecimal d) {
             return () -> d;
         }
 
         @Override
-        public Double toNumber(Supplier<Object> x) {
+        public BigDecimal toNumber(Supplier<Object> x) {
             return switch (x.get()) {
-                case Double d -> d;
-                case Boolean b -> b ? 1d : 0d;
-                case String s -> (Double) Context.query(s);
-                default -> throw new IllegalArgumentException(
-                        "Unexpected value: " + x + " to double");
+                case BigDecimal d -> d;
+                case Boolean b -> b ? BigDecimal.ONE : BigDecimal.ZERO;
+                case String s -> (BigDecimal) Context.query(s);
+                default -> BigDecimal.ONE;
+                // throw new IllegalArgumentException("Unexpected value: " + x.get() + " to BigDecimal");
             };
         }
 
@@ -60,11 +61,11 @@ public interface ScriptBundle {
         @Override
         public Boolean toBoolean(Supplier<Object> x) {
             return switch (x.get()) {
-                case Double d -> d != 0;
+                case BigDecimal d -> !d.equals(BigDecimal.ZERO);
                 case Boolean b -> b;
                 case String s -> (Boolean) Context.query(s);
-                default -> throw new IllegalArgumentException(
-                        "Unexpected value: " + x + " to boolean");
+                default -> true;
+                // throw new IllegalArgumentException("Unexpected value: " + x.get() + " to boolean");
             };
         }
 
@@ -72,17 +73,16 @@ public interface ScriptBundle {
 
         @Override
         public Parser<Supplier<Object>> primary() {
-            System.out.println(a++ + " ");
             return invokeExpr()
                     .or(name.map(x -> () -> x))
-                    .or(decimal.map(x -> () -> x))
+                    .or(decimal.map(x -> () -> new BigDecimal(x)))
                     .or(text.map(x -> () -> x));
         }
 
         @Override
         public Boolean eq(Supplier<Object> x, Supplier<Object> y) {
             return switch (x.get()) {
-                case Double d -> d.equals(toNumber(y));
+                case BigDecimal d -> d.equals(toNumber(y));
                 case Boolean b -> b.equals(toBoolean(y));
                 case String s -> s.equals(y.toString());
                 default -> x.equals(y);
@@ -91,7 +91,7 @@ public interface ScriptBundle {
 
         @Override
         public Boolean lt(Supplier<Object> x, Supplier<Object> y) {
-            return toNumber(x) < toNumber(y);
+            return toNumber(x).compareTo(toNumber(y)) < 0;
         }
 
         public Supplier<Object> assign(Supplier<Object> x, Supplier<Object> y) {
@@ -128,23 +128,30 @@ public interface ScriptBundle {
             return val;
         }
 
+        // public Object invoke(String name, String res, List<Object> args) {
+        //     var val = new NFInfer(name, itaniumGCC.get(res))
+        //             .invokeOrCalm(args.toArray());
+        //     return val;
+        // }
+
         public Parser<Supplier<Object>> invokeExpr() {
-            var parser = name.skip(between(colon))
+            var invokeWithExactType = name.skip(between(colon))
                     .follow(between(name).some())
                     .skip(between(string("->")))
                     .follow(name)
-                    .follow(() -> left(spaceEx, assignExpr).some());
-            return parser.map(tree -> (Supplier<Object>) () -> {
-                var tuple1 = tree.first();
-                var tuple2 = tuple1.first();
-                var name = tuple2.first();
-                var params = tuple2.second();
-                var res = tuple1.second();
-                var stream = tree.second().stream();
-                var argsv = stream.map(x -> Context.eval(x.get())).toList();
-                // System.out.println("argv: " + argsv);
-                return invoke(name, params, res, argsv);
-            });
+                    .follow(() -> left(spaceEx, assignExpr).some())
+                    .map(tree -> (Supplier<Object>) () -> {
+                        var tuple1 = tree.first();
+                        var tuple2 = tuple1.first();
+                        var name = tuple2.first();
+                        var params = tuple2.second();
+                        var res = tuple1.second();
+                        var stream = tree.second().stream();
+                        var argsv = stream.map(x -> Context.eval(x.get())).toList();
+                        // System.out.println("argv: " + argsv);
+                        return invoke(name, params, res, argsv);
+                    });
+            return invokeWithExactType;
         }
 
         @Override
@@ -155,51 +162,50 @@ public interface ScriptBundle {
         @Override
         public Supplier<Object> applyInt(Supplier<Object> x, Supplier<Object> y, InfixEval<Integer> operator) {
             var integer = operator.eval(toNumber(x).intValue(), toNumber(y).intValue());
-            return fromNumber(integer.doubleValue());
+            return fromNumber(new BigDecimal(integer));
         }
 
         @Override
         public Supplier<Object> negate(Supplier<Object> x) {
-            return fromNumber(-toNumber(x));
+            return fromNumber(toNumber(x).negate());
         }
 
         @Override
         public Supplier<Object> factorial(Supplier<Object> x) {
-            return fromNumber(DetInteger.factorial(toNumber(x).intValue())
-                    .doubleValue());
+            return fromNumber(new BigDecimal(DetInteger.factorial(toNumber(x).intValue())));
         }
 
         @Override
         public Supplier<Object> pow(Supplier<Object> x, Supplier<Object> y) {
-            return fromNumber(Math.pow(toNumber(x), toNumber(y)));
+            return fromNumber(toNumber(x).pow(toNumber(y).intValue()));
         }
 
         @Override
         public Supplier<Object> mul(Supplier<Object> x, Supplier<Object> y) {
-            return fromNumber(toNumber(x) * toNumber(y));
+            return fromNumber(toNumber(x).multiply(toNumber(y)));
         }
 
         @Override
         public Supplier<Object> div(Supplier<Object> x, Supplier<Object> y) {
-            return fromNumber(toNumber(x) / toNumber(y));
+            return fromNumber(toNumber(x).divide(toNumber(y), MathContext.DECIMAL64));
         }
 
         @Override
         public Supplier<Object> mod(Supplier<Object> x, Supplier<Object> y) {
-            return fromNumber(toNumber(x) % toNumber(y));
+            return fromNumber(toNumber(x).remainder(toNumber(y)));
         }
 
         @Override
         public Supplier<Object> add(Supplier<Object> x, Supplier<Object> y) {
             return switch (x.get()) {
                 case Text t -> () -> new Text(t.value + y.get());
-                default -> fromNumber(toNumber(x) + toNumber(y));
+                default -> fromNumber(toNumber(x).add(toNumber(y)));
             };
         }
 
         @Override
         public Supplier<Object> sub(Supplier<Object> x, Supplier<Object> y) {
-            return fromNumber(toNumber(x) - toNumber(y));
+            return fromNumber(toNumber(x).subtract(toNumber(y)));
         }
 
         @Override
@@ -220,25 +226,21 @@ public interface ScriptBundle {
 
         static {
             constants = new HashMap<String, Object>();
-            constants.put("e", Math.E);
-            constants.put("π", Math.PI);
-            constants.put("pi", Math.PI);
+            constants.put("e", BigDecimal.valueOf(Math.E));
+            constants.put("π", BigDecimal.valueOf(Math.PI));
+            constants.put("pi", BigDecimal.valueOf(Math.PI));
+            constants.put("false", false);
+            constants.put("true", true);
 
             variables = new HashMap<String, Object>();
 
-            // variables.put("true", true);
-            // variables.put("false", false);
-        }
-
-        public static boolean isUndefined(Object value) {
-            return value.equals("undefined");
         }
 
         public static Object query(String identifier) {
             return switch (identifier) {
                 case String v when variables.containsKey(v) -> variables.get(v);
                 case String c when constants.containsKey(c) -> constants.get(c);
-                default -> "undefined";
+                default -> throw new RuntimeException(identifier + " is not defined");
             };
         }
 
