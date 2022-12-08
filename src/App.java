@@ -20,7 +20,7 @@ import parsec.bundle.IntegerBundle;
 import parsec.records.Tuple;
 import parsec.spec.DetInteger;
 import parsec.variety.ArithmeticVariety;
-import script.ScriptMacro;
+import script.ScriptBundle;
 
 public interface App {
 
@@ -86,10 +86,10 @@ public interface App {
                 case ":q":
                     break loop;
                 case ".v":
-                    System.out.println(ScriptMacro.Context.variables);
+                    System.out.println(ScriptBundle.Context.variables);
                 default:
                     var buff = new StringBuffer(line);
-                    showParser(ScriptMacro.expr.map(x -> x.get()).parse(buff));
+                    showParser(ScriptBundle.expr.map(x -> x.get()).parse(buff));
             }
         }
         scanner.close();

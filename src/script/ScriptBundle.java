@@ -19,7 +19,7 @@ import static parsec.bundle.CharacterBundle.*;
 import static parsec.bundle.DoubleBundle.*;
 import static parsec.spec.Parser.*;
 
-public interface ScriptMacro {
+public interface ScriptBundle {
 
     static record Text(String value) {
         @Override
@@ -261,5 +261,13 @@ public interface ScriptMacro {
         }
 
     }
+
+
+
+
+
+
+
+    
 
 }

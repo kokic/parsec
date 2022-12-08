@@ -16,13 +16,12 @@ public final class CLib {
     public static SymbolLookup lookup;
     public static SegmentAllocator allocator;
 
-    static {
-        initial();
-    }
-
-    public static final void initial() {
+    public static final void requestLinker() {
         linker = Linker.nativeLinker();
         lookup = linker.defaultLookup();
+    }
+
+    public static final void requestAllocator() {
         allocator = SegmentAllocator.implicitAllocator();
     }
 
@@ -36,10 +35,14 @@ public final class CLib {
     public static final ValueLayout.OfDouble Double = ValueLayout.JAVA_DOUBLE;
 
     public static MemorySegment string(String str) {
+        if (Objects.isNull(allocator))
+            requestAllocator();
         return allocator.allocateUtf8String(str);
     }
 
     public static MethodHandle downcall(String name, FunctionDescriptor descriptor) {
+        if (Objects.isNull(linker))
+            requestLinker();
         return linker.downcallHandle(lookup.lookup(name).get(), descriptor);
     }
 
