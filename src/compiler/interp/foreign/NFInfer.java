@@ -1,4 +1,4 @@
-package foreign;
+package compiler.interp.foreign;
 
 import java.lang.foreign.MemoryLayout;
 

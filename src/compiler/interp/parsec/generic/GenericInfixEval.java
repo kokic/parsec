@@ -1,4 +1,4 @@
-package parsec.generic;
+package compiler.interp.parsec.generic;
 
 public interface GenericInfixEval<L, R, V> {
     V eval(L left, R right);

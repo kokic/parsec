@@ -1,10 +1,10 @@
-package parsec.bundle;
+package compiler.interp.parsec.bundle;
 
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import parsec.records.Tuple;
-import parsec.spec.Parser;
+import compiler.interp.parsec.records.Tuple;
+import compiler.interp.parsec.spec.Parser;
 
 public interface CharacterBundle {
 

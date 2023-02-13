@@ -1,9 +1,9 @@
-package parsec.variety;
+package compiler.interp.parsec.variety;
 
-import static parsec.bundle.CharacterBundle.*;
-import static parsec.spec.Parser.*;
+import static compiler.interp.parsec.bundle.CharacterBundle.*;
+import static compiler.interp.parsec.spec.Parser.*;
 
-import parsec.spec.Parser;
+import compiler.interp.parsec.spec.Parser;
 
 public abstract class PrimaryVariety<T> {
 

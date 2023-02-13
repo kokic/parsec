@@ -1,8 +1,8 @@
-package parsec.spec;
+package compiler.interp.parsec.spec;
 
 import java.math.BigInteger;
 
-import parsec.generic.GenericUnaryEval;
+import compiler.interp.parsec.generic.GenericUnaryEval;
 
 public interface DetInteger {
 

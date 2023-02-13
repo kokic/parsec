@@ -1,3 +1,6 @@
+package compiler.interp;
+
+import static compiler.interp.parsec.bundle.CharacterBundle.*;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
@@ -12,15 +15,13 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Supplier;
 
-import static parsec.bundle.CharacterBundle.*;
-
-import parsec.bundle.CharacterBundle;
-import parsec.bundle.DoubleBundle;
-import parsec.bundle.IntegerBundle;
-import parsec.records.Tuple;
-import parsec.spec.DetInteger;
-import parsec.variety.ArithmeticVariety;
-import script.ScriptBundle;
+import compiler.interp.parsec.bundle.CharacterBundle;
+import compiler.interp.parsec.bundle.DoubleBundle;
+import compiler.interp.parsec.bundle.IntegerBundle;
+import compiler.interp.parsec.records.Tuple;
+import compiler.interp.parsec.spec.DetInteger;
+import compiler.interp.parsec.variety.ArithmeticVariety;
+import compiler.interp.script.ScriptBundle;
 
 public interface App {
 

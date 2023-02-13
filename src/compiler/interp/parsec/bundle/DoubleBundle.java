@@ -1,13 +1,13 @@
-package parsec.bundle;
+package compiler.interp.parsec.bundle;
 
-import static parsec.bundle.CharacterBundle.*;
-import static parsec.bundle.IntegerBundle.*;
+import static compiler.interp.parsec.bundle.CharacterBundle.*;
+import static compiler.interp.parsec.bundle.IntegerBundle.*;
 
 import java.util.function.Function;
 
-import parsec.spec.DetInteger;
-import parsec.spec.Parser;
-import parsec.variety.ArithmeticVariety;
+import compiler.interp.parsec.spec.DetInteger;
+import compiler.interp.parsec.spec.Parser;
+import compiler.interp.parsec.variety.ArithmeticVariety;
 
 public interface DoubleBundle {
 

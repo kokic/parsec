@@ -1,4 +1,4 @@
-package parsec.generic;
+package compiler.interp.parsec.generic;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import parsec.records.Tuple;
+import compiler.interp.parsec.records.Tuple;
 
 public interface GenericParser<Tokens, A> {
 

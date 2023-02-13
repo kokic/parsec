@@ -1,13 +1,13 @@
-package parsec.spec;
+package compiler.interp.parsec.spec;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import parsec.generic.GenericInfixEval;
-import parsec.generic.GenericParser;
-import parsec.records.Tuple;
+import compiler.interp.parsec.generic.GenericInfixEval;
+import compiler.interp.parsec.generic.GenericParser;
+import compiler.interp.parsec.records.Tuple;
 
 public interface Parser<A> extends GenericParser<StringBuffer, A> {
 

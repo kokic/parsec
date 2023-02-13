@@ -1,14 +1,14 @@
-package parsec.variety;
+package compiler.interp.parsec.variety;
 
-import static parsec.bundle.CharacterBundle.*;
-import static parsec.spec.Parser.*;
+import static compiler.interp.parsec.bundle.CharacterBundle.*;
+import static compiler.interp.parsec.spec.Parser.*;
 
 import java.math.BigDecimal;
 import java.util.function.Function;
 
-import parsec.generic.GenericInfixEval;
-import parsec.spec.InfixEval;
-import parsec.spec.Parser;
+import compiler.interp.parsec.generic.GenericInfixEval;
+import compiler.interp.parsec.spec.InfixEval;
+import compiler.interp.parsec.spec.Parser;
 
 public abstract class LogicVariety<T, N> extends ArithmeticVariety<T, N> {
 

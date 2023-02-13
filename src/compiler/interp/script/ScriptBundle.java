@@ -1,23 +1,24 @@
-package script;
+package compiler.interp.script;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import compiler.interp.foreign.CLib;
+import compiler.interp.foreign.NFInfer;
+import compiler.interp.parsec.spec.DetInteger;
+import compiler.interp.parsec.spec.InfixEval;
+import compiler.interp.parsec.spec.Parser;
+import compiler.interp.parsec.variety.LogicVariety;
+
+import static compiler.interp.parsec.bundle.CharacterBundle.*;
+import static compiler.interp.parsec.bundle.DoubleBundle.*;
+import static compiler.interp.parsec.spec.Parser.*;
+
 import java.lang.foreign.MemoryLayout;
 import java.math.BigDecimal;
 import java.math.MathContext;
-
-import foreign.CLib;
-import foreign.NFInfer;
-import parsec.spec.DetInteger;
-import parsec.spec.InfixEval;
-import parsec.spec.Parser;
-import parsec.variety.LogicVariety;
-
-import static parsec.bundle.CharacterBundle.*;
-import static parsec.bundle.DoubleBundle.*;
-import static parsec.spec.Parser.*;
 
 public interface ScriptBundle {
 

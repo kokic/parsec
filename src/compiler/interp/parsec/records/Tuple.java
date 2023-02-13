@@ -1,4 +1,4 @@
-package parsec.records;
+package compiler.interp.parsec.records;
 
 public record Tuple<F, S> (F first, S second) {
 
